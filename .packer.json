@@ -1,0 +1,38 @@
+{
+    "BuildType" : "Docker",
+    "BuildInstructions" : {
+        "debian_9": [
+            "cd /ring-project",
+            "dch --create --package ring --newversion {{RELEASE_NUMBER}}~dfsg1-1 \"Automatic nightly release\"",
+            "dch --release --distribution \"unstable\" debian/changelog",
+            "./scripts/release-tarball.sh",
+            "mk-origtargz ring_*.tar.gz",
+            "rm ring_*.tar.gz",
+            "GET_ORIG_SOURCE_OVERRIDE_USCAN_TARBALL=$(realpath ../ring_*.orig.tar.gz) debian/rules get-orig-source",
+            "mv ring_*.orig.tar.gz ../",
+            "dpkg-buildpackage -uc -us",
+            "cd .. ",
+            "mv *.orig.tar* *.debian.tar* *deb *changes *dsc /output"
+        ]
+    },
+    "UpdateInstructions" : {
+        "debian_9": ["apt-get update", "( apt-get upgrade -y || apt-get upgrade -y || apt-get upgrade -y )"]
+},
+    "ReviewType": "",
+    "ReviewAddress": "https://gerrit-ring.savoirfairelinux.com",
+    "Package" : {
+        "debian_9": ""
+    },
+    "ReloadProjectCmd" : [
+        "git checkout master",
+        "git reset --hard origin/master",
+        "git pull origin/master",
+        "git submodule foreach git reset --hard origin/master",
+        "git submodule foreach git pull origin master"
+    ],
+    "AutoDeploySchedule": {
+        "debian_9": "0 0 0 * * THU"
+    },
+    "DeployScript": "ring-nightly-sign-deploy.sh",
+    "NotificationMailAdress": ["Awesome Ring Team", "ring-dev@lists.savoirfairelinux.net"]
+}
